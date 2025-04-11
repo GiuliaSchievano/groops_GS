@@ -20826,6 +20826,52 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SimulateCoVisibility">
+				<xs:annotation>
+					<xs:documentation>simulate tracking data (range, range-rate, range-accelerations) between 2 satellites</xs:documentation>
+					<xs:appinfo>tag: Simulation</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileSatelliteTracking" type="filename" default="file">
+							<xs:annotation>
+								<xs:documentation>GROOPS co-visibility file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit1" type="filename" default="file">
+							<xs:annotation>
+								<xs:documentation>GROOPS orbit file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit2" type="filename" default="file">
+							<xs:annotation>
+								<xs:documentation>GROOPS orbit file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="position0x" type="double">
+							<xs:annotation>
+								<xs:documentation>[m] in ECEF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="position0y" type="double">
+							<xs:annotation>
+								<xs:documentation>[m] in ECEF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="position0z" type="double">
+							<xs:annotation>
+								<xs:documentation>[m] in ECEF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" default="file">
+							<xs:annotation>
+								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="SimulateGradiometer">
 				<xs:annotation>
 					<xs:documentation>simulate error free gradiometer data</xs:documentation>
