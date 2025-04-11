@@ -48,6 +48,7 @@ Epoch *Epoch::create(Type type)
       case Epoch::STARCAMERA:            return new StarCameraEpoch();
       case Epoch::ACCELEROMETER:         return new AccelerometerEpoch();
       case Epoch::SATELLITETRACKING:     return new SatelliteTrackingEpoch();
+      case Epoch::COVISIBILITY:          return new SimulateCoVisibilityEpoch();
       case Epoch::GRADIOMETER:           return new GradiometerEpoch();
       case Epoch::GNSSRECEIVER:          return new GnssReceiverEpoch();
       case Epoch::OBSERVATIONSIGMA:      return new ObservationSigmaEpoch();
@@ -91,6 +92,7 @@ std::string Epoch::getTypeName(Type type)
       case Epoch::STARCAMERA:            return "STARCAMERA";
       case Epoch::ACCELEROMETER:         return "ACCELEROMETER";
       case Epoch::SATELLITETRACKING:     return "SATELLITETRACKING";
+      case Epoch::COVISIBILITY:          return "COVISIBILITY";
       case Epoch::GRADIOMETER:           return "GRADIOMETER";
       case Epoch::GNSSRECEIVER:          return "GNSSRECEIVER";
       case Epoch::OBSERVATIONSIGMA:      return "OBSERVATIONSIGMA";
@@ -142,6 +144,7 @@ std::string Epoch::fileFormatString(Type type)
       case Epoch::STARCAMERA:            return "Time [MJD]               data0: quaternion 0       data1: quaternion x       data2: quaternion y       data3: quaternion z     ";
       case Epoch::ACCELEROMETER:         return "Time [MJD]               data0: x [m/s^2]          data1: y [m/s^2]          data2: z [m/s^2]        ";
       case Epoch::SATELLITETRACKING:     return "Time [MJD]               data0: range [m]          data1: range-rate [m/s]   data2: range-acc [m/s^2]";
+      case Epoch::COVISIBILITY:          return "Time [MJD]               data0: range [m]          data1: range-rate [m/s]   data2: range-acc [m/s^2]  data3: rel-elev 1 [rad]   data4: rel-elev 2 [rad]   data5: rel-azimuth 1 [rad] data6: rel-azimuth 2 [rad]  data7: visibility GS-sat1 data8: visibility GS-sat2 data9: co-visibility data10: co-visibility (tot) [sec] data11: range OGS sat1 [m] data12: range OGS sat2 [m]" ; 
       case Epoch::GRADIOMETER:           return "Time [MJD]               data0: xx [1/s^2]         data1: yy [1/s^2]         data2: zz [1/s^2]         data3: xy [1/s^2]         data4: xz [1/s^2]         data5: yz [1/s^2]       ";
       case Epoch::GNSSRECEIVER:          return "";
       case Epoch::OBSERVATIONSIGMA:      return "Time [MJD]               data0: sigma            ";
@@ -183,6 +186,7 @@ UInt Epoch::dataCount(Type type, Bool mustDefined)
       case Epoch::STARCAMERA:            return 4;
       case Epoch::ACCELEROMETER:         return 3;
       case Epoch::SATELLITETRACKING:     return 3;
+      case Epoch::COVISIBILITY:          return 4;
       case Epoch::GRADIOMETER:           return 6;
       case Epoch::OBSERVATIONSIGMA:      return 1;
       case Epoch::MASS:                  return 2;
@@ -733,6 +737,7 @@ void InstrumentFile::open(const FileName &name)
             case  2: type = Epoch::STARCAMERA;           break;
             case  3: type = Epoch::ACCELEROMETER;        break;
             case  5: type = Epoch::SATELLITETRACKING;    break;
+            case  6: type = Epoch::COVISIBILITY;         break;
             case  4: type = Epoch::GRADIOMETER;          break;
             case 13: type = Epoch::GNSSRECEIVER;         break;
             case 20: type = Epoch::OBSERVATIONSIGMA;     break;
@@ -1225,6 +1230,94 @@ void SatelliteTrackingEpoch::setData(const Vector &x)
 
 /***********************************************/
 /***********************************************/
+
+
+void SimulateCoVisibilityEpoch::save(OutArchive &oa) const
+{
+  oa << nameValue ("time",              time);
+  oa << nameValue ("range",             range);
+  oa << nameValue ("rangeRate",         rangeRate);
+  oa << nameValue ("rangeAcceleration", rangeAcceleration);
+  oa << nameValue ("relElevation1",     relElevation1);
+  oa << nameValue ("relElevation2",     relElevation2);
+  oa << nameValue ("relAzimuth1",       relAzimuth1);
+  oa << nameValue ("relAzimuth2",       relAzimuth2);
+  oa << nameValue ("coVis1",            coVis1);
+  oa << nameValue ("coVis2",            coVis2);
+  oa << nameValue ("coVis",             coVis);
+  oa << nameValue ("coVisTot",          coVisTot);
+  oa << nameValue ("OGS_s1",            OGS_s1);
+  oa << nameValue ("OGS_s2",            OGS_s2);
+}
+
+/***********************************************/
+
+void SimulateCoVisibilityEpoch::load(InArchive &ia)
+{
+  ia >> nameValue ("time",              time);
+  ia >> nameValue ("range",             range);
+  ia >> nameValue ("rangeRate",         rangeRate);
+  ia >> nameValue ("rangeAcceleration", rangeAcceleration);
+  ia >> nameValue ("relElevation1",     relElevation1);
+  ia >> nameValue ("relElevation2",     relElevation2);
+  ia >> nameValue ("relAzimuth1",       relAzimuth1);
+  ia >> nameValue ("relAzimuth2",       relAzimuth2);
+  ia >> nameValue ("coVis1",            coVis1);
+  ia >> nameValue ("coVis2",            coVis2);
+  ia >> nameValue ("coVis",             coVis);
+  ia >> nameValue ("coVisTot",          coVisTot);
+  ia >> nameValue ("OGS_s1",            OGS_s1);
+  ia >> nameValue ("OGS_s2",            OGS_s2);
+  if(ia.version() < 20200123)
+  {
+    UInt phaseIndex;
+    ia >> nameValue ("phaseIndex", phaseIndex);
+  }
+}
+
+/***********************************************/
+
+Vector SimulateCoVisibilityEpoch::data() const
+{
+  Vector x(13);
+  x(0) = range;
+  x(1) = rangeRate;
+  x(2) = rangeAcceleration;
+  x(3) = relElevation1;
+  x(4) = relElevation2;
+  x(5) = relAzimuth1;
+  x(6) = relAzimuth2;
+  x(7) = coVis1;
+  x(8) = coVis2;
+  x(9) = coVis;
+  x(10) = coVisTot;
+  x(11) = OGS_s1;
+  x(12) = OGS_s2;
+  return x;
+}
+
+/***********************************************/
+
+void SimulateCoVisibilityEpoch::setData(const Vector &x)
+{
+  range             = x(0);
+  rangeRate         = x(1);
+  rangeAcceleration = x(2);
+  relElevation1     = x(3);
+  relElevation2     = x(4);
+  relAzimuth1       = x(5);
+  relAzimuth2       = x(6);
+  coVis1            = x(7);
+  coVis2            = x(8);
+  coVis             = x(9);
+  coVisTot          = x(10);
+  OGS_s1            = x(11); 
+  OGS_s2            = x(12);
+}
+
+/***********************************************/
+
+
 
 void GradiometerEpoch::save(OutArchive &oa) const
 {

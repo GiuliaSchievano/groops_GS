@@ -108,7 +108,8 @@ public:
                     STARCAMERA1A          = -21,
                     ACCELEROMETER1A       = -22,
                     SATELLITELASERRANGING = -23,
-                    METEOROLOGICAL        = -24};
+                    METEOROLOGICAL        = -24,
+                    COVISIBILITY          = -25};
 
   Time time; //!< Time of Epoch.
 
@@ -704,6 +705,41 @@ public:
 typedef ArcTemplate<SatelliteTrackingEpoch> SatelliteTrackingArc;
 
 /***********************************************/
+/***********************************************/
+
+/** @brief Epoch with (low-low) satellite tracking data. */
+class SimulateCoVisibilityEpoch : public Epoch
+{
+public:
+  Double range;
+  Double rangeRate;
+  Double rangeAcceleration;
+  Double relElevation1;
+  Double relElevation2;
+  Double relAzimuth1;
+  Double relAzimuth2;
+  Double coVis1;
+  Double coVis2;
+  Double coVis;
+  Double coVisTot;
+  Double OGS_s1;
+  Double OGS_s2;
+
+  SimulateCoVisibilityEpoch() : range(0), rangeRate(0), rangeAcceleration(0), relElevation1(0), relElevation2(0), relAzimuth1(0), relAzimuth2(0), coVis1(0), coVis2(0), coVis(0), coVisTot(0), OGS_s1(0), OGS_s2(0) {}
+
+  static constexpr Type type = COVISIBILITY;
+  virtual Type   getType() const {return type;}
+  virtual Vector data()    const; // data without time
+  virtual void   setData(const Vector &x);
+  virtual Epoch *clone()   const {return new SimulateCoVisibilityEpoch(*this);}
+  virtual void   save(OutArchive &oa) const;
+  virtual void   load(InArchive  &ia);
+};
+
+typedef ArcTemplate<SimulateCoVisibilityEpoch> SimulateCoVisibilityArc;
+
+/***********************************************/
+
 
 /** @brief Epoch with gradiometer data (gravity gradients). */
 class GradiometerEpoch : public Epoch
